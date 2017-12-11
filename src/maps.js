@@ -4,7 +4,7 @@ import Maps from "./maps.json"
 import Links from "./map-links.json"
 const mapValues = _.mapValues.convert({cap: false})
 
-const rawMaps = createSelector(
+export const rawMaps = createSelector(
   () => Maps,
   mapValues((map, name) => ({name, ...map})),
 )
@@ -22,7 +22,7 @@ const linksByName = createSelector(rawMaps, links, (maps, list) => {
   return byName
 })
 
-const vendorsFromByName = createSelector(rawMaps, maps => {
+export const vendorsFromByName = createSelector(rawMaps, maps => {
   const byName = mapValues(() => [], maps)
   for (let map of _.values(maps)) {
     const {vendor, name} = map
@@ -95,7 +95,7 @@ export const groupNames = createSelector(
 export const peerNames = createSelector(
   namesByGroup,
   mapGroup,
-  (groups, group) => groups[group - 1],
+  (groups, group) => groups[group],
 )
 export const groupCount = createSelector(groupNames, _.iteratee("length"))
 export const totalCount = createSelector(names, _.iteratee("length"))

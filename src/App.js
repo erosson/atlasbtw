@@ -5,6 +5,7 @@ import {createStructuredSelector} from "reselect"
 import {connect, Provider} from "react-redux"
 import * as Maps from "./maps"
 import * as Tracker from "./tracker"
+import * as Filter from "./filter"
 import * as Navbar from "react-bootstrap/lib/Navbar"
 import * as Nav from "react-bootstrap/lib/Nav"
 import * as NavItem from "react-bootstrap/lib/NavItem"
@@ -17,6 +18,11 @@ import * as ListGroup from "react-bootstrap/lib/ListGroup"
 import * as ListGroupItem from "react-bootstrap/lib/ListGroupItem"
 import * as Checkbox from "react-bootstrap/lib/Checkbox"
 const map = _.map.convert({cap: false})
+
+function groupLabel(name) {
+  if (name === "unique") return "Uniques"
+  return "Tier " + parseInt(name)
+}
 
 function TrackerLinkRender(props) {
   const {name, vendorsFrom, dropsFrom, isCompleted, toggleComplete} = props
@@ -84,8 +90,9 @@ const TrackerLink = connect(
 
 function GroupRender(props) {
   const {names, group, numCompleted, numTotal} = props
+  if (!names.length) return null
   return (
-    <Panel header={group + ": " + numCompleted + "/" + numTotal}>
+    <Panel header={groupLabel(group) + ": " + numCompleted + "/" + numTotal}>
       <ListGroup>
         {map(name => <TrackerLink key={name} name={name} />, names)}
       </ListGroup>
@@ -96,14 +103,14 @@ function GroupRender(props) {
 const Group = connect(
   createStructuredSelector({
     group: Maps.groupName,
-    names: Maps.groupNames,
+    names: Filter.groupNames,
     numCompleted: Tracker.groupNumCompleted,
     numTotal: Maps.groupCount,
   }),
 )(GroupRender)
 
 function AppRender(props) {
-  const {groups, numCompleted, numTotal} = props
+  const {groups, numCompleted, numTotal, input, setInput} = props
   return (
     <div className="App container">
       <Navbar inverse fixedTop>
@@ -114,13 +121,15 @@ function AppRender(props) {
           <FormGroup>
             <FormControl
               type="text"
-              placeholder="&quot;name&quot;, &quot;unique&quot;, &quot;vendor:none&quot;"
+              placeholder="&quot;&lt;name&gt;&quot;, &quot;unique&quot;, &quot;novendor&quot;"
+              value={input}
+              onChange={setInput}
             />
             <Button>Filter</Button>
           </FormGroup>
         </Navbar.Form>
       </Navbar>
-      <Well>
+      <Well style={{marginTop: "70px"}}>
         All maps: {numCompleted}/{numTotal}
       </Well>
       {map(group => <Group key={group} group={group} />, groups)}
@@ -130,14 +139,22 @@ function AppRender(props) {
 }
 const App = connect(
   createStructuredSelector({
+    input: Filter.filterInput,
     groups: Maps.groups,
     numCompleted: Tracker.totalNumCompleted,
     numTotal: Maps.totalCount,
+  }),
+  {setInput: Filter.setInput},
+  (s, d, p) => ({
+    ...s,
+    ...p,
+    setInput: event => d.setInput(event.target.value),
   }),
 )(AppRender)
 
 const reducer = combineReducers({
   tracker: Tracker.reducer,
+  filter: Filter.reducer,
 })
 const PERSIST_KEY = "poeatlas"
 function load() {
@@ -150,8 +167,8 @@ function load() {
 }
 const store = createStore(reducer, load() || undefined)
 function save() {
-  console.log("persist", store.getState())
-  window.localStorage.setItem(PERSIST_KEY, JSON.stringify(store.getState()))
+  const state = _.pick(["tracker"], store.getState())
+  window.localStorage.setItem(PERSIST_KEY, JSON.stringify(state))
 }
 store.subscribe(save)
 export default function Main() {
