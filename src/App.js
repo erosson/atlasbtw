@@ -28,17 +28,16 @@ function TrackerLinkRender(props) {
             )}
           </div>
           <div>
-            {dropsFrom.length ? (
-              "drops from: " +
-              dropsFrom
-                .map(
-                  ({name, peers}) =>
-                    name + " (" + Math.floor(100 / peers) + "%)",
-                )
-                .join(", ")
-            ) : (
-              <i>NO DROPS?!</i>
-            )}
+            {dropsFrom.length
+              ? "drops from: " +
+                dropsFrom
+                  .map(
+                    ({name, peers}) =>
+                      name + " (" + Math.floor(100 / peers) + "%)",
+                  )
+                  .join(", ")
+              : // for T1s.
+                null}
           </div>
         </div>
       )}
