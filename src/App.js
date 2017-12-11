@@ -5,26 +5,48 @@ import {createStructuredSelector} from "reselect"
 import {connect, Provider} from "react-redux"
 import * as Maps from "./maps"
 import * as Tracker from "./tracker"
+import * as Navbar from "react-bootstrap/lib/Navbar"
+import * as Nav from "react-bootstrap/lib/Nav"
+import * as NavItem from "react-bootstrap/lib/NavItem"
+import * as FormGroup from "react-bootstrap/lib/FormGroup"
+import * as FormControl from "react-bootstrap/lib/FormControl"
+import * as Button from "react-bootstrap/lib/Button"
+import * as Panel from "react-bootstrap/lib/Panel"
+import * as Well from "react-bootstrap/lib/Well"
+import * as ListGroup from "react-bootstrap/lib/ListGroup"
+import * as ListGroupItem from "react-bootstrap/lib/ListGroupItem"
+import * as Checkbox from "react-bootstrap/lib/Checkbox"
 const map = _.map.convert({cap: false})
 
 function TrackerLinkRender(props) {
   const {name, vendorsFrom, dropsFrom, isCompleted, toggleComplete} = props
   return (
-    <li>
-      {isCompleted ? (
+    <ListGroupItem
+      header={[
+        <input
+          key="checkbox"
+          type="checkbox"
+          name={name}
+          id={"checkbox-" + name}
+          checked={isCompleted}
+          onClick={toggleComplete}
+        />,
+        <label
+          key="label"
+          for={"checkbox-" + name}
+          style={{marginLeft: "0.3em"}}
+        >
+          {_.startCase(name)}
+        </label>,
+      ]}
+    >
+      {isCompleted ? null : (
         <div>
-          <button onClick={toggleComplete}>{name}</button>: done
-        </div>
-      ) : (
-        <div>
-          <div>
-            <button onClick={toggleComplete}>{name}</button>: incomplete.
-          </div>
           <div>
             {vendorsFrom.length ? (
               "vendors from: " + vendorsFrom.join(", ")
             ) : (
-              <i>NO VENDOR.</i>
+              <i>NO VENDOR</i>
             )}
           </div>
           <div>
@@ -41,7 +63,7 @@ function TrackerLinkRender(props) {
           </div>
         </div>
       )}
-    </li>
+    </ListGroupItem>
   )
 }
 const TrackerLink = connect(
@@ -63,13 +85,12 @@ const TrackerLink = connect(
 function TierRender(props) {
   const {names, tier, numCompleted, numTotal} = props
   return (
-    <div>
-      <h3>
-        Tier {tier}: {numCompleted}/{numTotal}
-      </h3>
-      <ul>{map(name => <TrackerLink key={name} name={name} />, names)}</ul>
+    <Panel header={"Tier " + tier + ": " + numCompleted + "/" + numTotal}>
+      <ListGroup>
+        {map(name => <TrackerLink key={name} name={name} />, names)}
+      </ListGroup>
       {/* {JSON.stringify(names, null, 2)} */}
-    </div>
+    </Panel>
   )
 }
 const Tier = connect(
@@ -83,11 +104,21 @@ const Tier = connect(
 function AppRender(props) {
   const {namesByTier, numCompleted, numTotal} = props
   return (
-    <div className="App">
-      <h1>Path of Exile Atlas Planner</h1>
-      <h3>
+    <div className="App container">
+      <Navbar inverse>
+        <Navbar.Header>
+          <Navbar.Brand>Path of Exile Atlas Planner</Navbar.Brand>
+        </Navbar.Header>
+        {/*<Navbar.Form pullLeft>
+          <FormGroup>
+            <FormControl type="text" placeholder="Search" value="xyz" />
+            <Button>Filter</Button>
+          </FormGroup>
+        </Navbar.Form>*/}
+      </Navbar>
+      <Well>
         All maps: {numCompleted}/{numTotal}
-      </h3>
+      </Well>
       {map(
         (names, tier0) => <Tier key={tier0} tier0={tier0} names={names} />,
         namesByTier,
