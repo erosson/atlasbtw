@@ -1,0 +1,27 @@
+[
+  ["beach", "arid lake"],
+  ["beach", "desert"],
+  ["dungeon", "flooded mine"],
+  ["graveyard", "marshes"],
+  ["lookout", "alleyways"],
+  ["lookout", "pen"],
+
+  ["alleyways", "arcade"],
+  ["alleyways", "cage"],
+  ["alleyways", "port"],
+  ["arid lake", "peninsula"],
+  ["desert", "iceberg"],
+  ["pen", "cage"],
+  ["flooded mine", "leyline"],
+  ["flooded mine", "excavation"],
+  ["flooded mine", "cells"],
+  ["marshes", "burial chambers"],
+  ["marshes", "springs"],
+
+  ["port", "lighthouse"],
+  ["iceberg", "strand"],
+  ["peninsula", "canyon"],
+  ["peninsula", "strand"],
+  ["springs", "chateau"],
+  ["burial chambers", "relic chambers"]
+]

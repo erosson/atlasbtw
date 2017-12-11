@@ -1,0 +1,24 @@
+{
+  "name": "poeatlas",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-redux": "^5.0.6",
+    "react-scripts": "1.0.17",
+    "redux": "^3.7.2",
+    "reselect": "^3.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "test:watch": "jest --watch",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "prettier": "^1.9.1"
+  }
+}

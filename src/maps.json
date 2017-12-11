@@ -1,0 +1,22 @@
+{
+  "beach": {"tier": 1, "vendor": "desert"},
+  "dungeon": {"tier": 1, "vendor": "flooded mine"},
+  "graveyard": {"tier": 1, "vendor": "marshes"},
+  "lookout": {"tier": 1, "vendor": "alleyways"},
+  "alleyways": {"tier": 2, "vendor": "arcade"},
+  "arid lake": {"tier": 2, "vendor": "peninsula"},
+  "desert": {"tier": 2, "vendor": "iceberg"},
+  "flooded mine": {"tier": 2, "vendor": "excavation"},
+  "marshes": {"tier": 2, "vendor": "springs"},
+  "pen": {"tier": 2, "vendor": "cage"},
+  "arcade": {"tier": 3, "vendor": "courthouse"},
+  "burial chambers": {"tier": 3, "vendor": "relic chambers"},
+  "cage": {"tier": 3, "vendor": "city square"},
+  "cells": {"tier": 3, "vendor": ""},
+  "excavation": {"tier": 3, "vendor": ""},
+  "iceberg": {"tier": 3, "vendor": ""},
+  "leyline": {"tier": 3, "vendor": ""},
+  "peninsula": {"tier": 3, "vendor": ""},
+  "port": {"tier": 3, "vendor": ""},
+  "springs": {"tier": 3, "vendor": "chateau"}
+}
