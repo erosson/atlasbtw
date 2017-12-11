@@ -14,6 +14,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "deploy": "react-scripts build && rm -rf docs && cp -rp build docs && git add docs",
     "test": "react-scripts test --env=jsdom",
     "test:watch": "jest --watch",
     "eject": "react-scripts eject"
