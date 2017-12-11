@@ -13,16 +13,12 @@ function TrackerLinkRender(props) {
     <li>
       {isCompleted ? (
         <div>
-          <a href="#" onClick={toggleComplete}>
-            {name}
-          </a>: done
+          <button onClick={toggleComplete}>{name}</button>: done
         </div>
       ) : (
         <div>
           <div>
-            <a href="#" onClick={toggleComplete}>
-              {name}
-            </a>: incomplete.
+            <button onClick={toggleComplete}>{name}</button>: incomplete.
           </div>
           <div>
             {vendorsFrom.length ? (
