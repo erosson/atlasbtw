@@ -82,10 +82,10 @@ const TrackerLink = connect(
   }),
 )(TrackerLinkRender)
 
-function TierRender(props) {
-  const {names, tier, numCompleted, numTotal} = props
+function GroupRender(props) {
+  const {names, group, numCompleted, numTotal} = props
   return (
-    <Panel header={"Tier " + tier + ": " + numCompleted + "/" + numTotal}>
+    <Panel header={group + ": " + numCompleted + "/" + numTotal}>
       <ListGroup>
         {map(name => <TrackerLink key={name} name={name} />, names)}
       </ListGroup>
@@ -93,43 +93,44 @@ function TierRender(props) {
     </Panel>
   )
 }
-const Tier = connect(
+const Group = connect(
   createStructuredSelector({
-    tier: Maps.tierName,
-    numCompleted: Tracker.tierNumCompleted,
-    numTotal: Maps.tierCount,
+    group: Maps.groupName,
+    names: Maps.groupNames,
+    numCompleted: Tracker.groupNumCompleted,
+    numTotal: Maps.groupCount,
   }),
-)(TierRender)
+)(GroupRender)
 
 function AppRender(props) {
-  const {namesByTier, numCompleted, numTotal} = props
+  const {groups, numCompleted, numTotal} = props
   return (
     <div className="App container">
-      <Navbar inverse>
+      <Navbar inverse fixedTop>
         <Navbar.Header>
           <Navbar.Brand>Path of Exile Atlas Planner</Navbar.Brand>
         </Navbar.Header>
-        {/*<Navbar.Form pullLeft>
+        <Navbar.Form pullLeft>
           <FormGroup>
-            <FormControl type="text" placeholder="Search" value="xyz" />
+            <FormControl
+              type="text"
+              placeholder="&quot;name&quot;, &quot;unique&quot;, &quot;vendor:none&quot;"
+            />
             <Button>Filter</Button>
           </FormGroup>
-        </Navbar.Form>*/}
+        </Navbar.Form>
       </Navbar>
       <Well>
         All maps: {numCompleted}/{numTotal}
       </Well>
-      {map(
-        (names, tier0) => <Tier key={tier0} tier0={tier0} names={names} />,
-        namesByTier,
-      )}
+      {map(group => <Group key={group} group={group} />, groups)}
       {/* <pre>{JSON.stringify(props, null, 2)}</pre> */}
     </div>
   )
 }
 const App = connect(
   createStructuredSelector({
-    namesByTier: Maps.namesByTier,
+    groups: Maps.groups,
     numCompleted: Tracker.totalNumCompleted,
     numTotal: Maps.totalCount,
   }),

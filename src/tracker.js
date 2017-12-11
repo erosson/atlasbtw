@@ -15,7 +15,7 @@ export const isCompleted = createSelector(
 function _total(state, names) {
   return _.filter(name => state[name], names).length
 }
-export const tierNumCompleted = createSelector(local, Maps.tierNames, _total)
+export const groupNumCompleted = createSelector(local, Maps.groupNames, _total)
 export const totalNumCompleted = createSelector(local, Maps.names, _total)
 const peersNumCompleted = createSelector(local, Maps.peerNames, _total)
 export const dropOdds = createSelector(

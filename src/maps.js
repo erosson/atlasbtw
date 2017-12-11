@@ -47,8 +47,7 @@ export const dropsFrom = createSelector(
   dropsFromAll,
   rawMaps,
   mapTier,
-  (names, maps, maxTier) =>
-    _.filter(name => maps[name] && maps[name].tier <= maxTier, names),
+  (names, maps, maxTier) => _.filter(name => maps[name].tier <= maxTier, names),
 )
 // With no completion, what are the odds that other maps will drop this map?
 export const dropOdds = createSelector(
@@ -60,10 +59,8 @@ export const dropOdds = createSelector(
     _.map(
       name => ({
         name,
-        peers: _.filter(
-          linkName => maps[linkName] && maps[linkName].tier === tier,
-          links[name],
-        ).length,
+        peers: _.filter(linkName => maps[linkName].tier === tier, links[name])
+          .length,
       }),
       names,
     ),
@@ -71,30 +68,34 @@ export const dropOdds = createSelector(
 
 const list = createSelector(rawMaps, _.sortBy(["tier", "name"]))
 export const names = createSelector(list, _.map("name"))
-// tiers are array indexes. names[0] = tier 1 maps
-export const namesByTier = createSelector(
+function _mapGroup(map) {
+  return map.unique ? "unique" : _.padCharsStart("0", 2, map.tier)
+}
+const mapGroup = createSelector(map, _mapGroup)
+export const namesByGroup = createSelector(
   list,
   _.flow(
-    _.groupBy("tier"),
-    _.entries,
-    _.sortBy(0),
-    _.map(_.flow(_.get(1), _.map("name"))),
+    _.groupBy(_mapGroup),
+    _.mapValues(_.map("name")),
+    l => console.log("namesByGroup", l) || l,
   ),
 )
+export const groups = createSelector(
+  namesByGroup,
+  _.flow(_.keys, _.sortBy(_.identity)),
+)
+export const groupName = (s, p) => p.group
 export const tierName = (s, p) => p.tier || p.tier0 + 1
 const tierIndex = createSelector(tierName, t => t - 1)
-export const tierNames = createSelector(
-  namesByTier,
-  tierIndex,
-  (tiers, tier) => tiers[tier],
+export const groupNames = createSelector(
+  namesByGroup,
+  groupName,
+  (groups, group) => groups[group],
 )
 export const peerNames = createSelector(
-  namesByTier,
-  mapTier,
-  (tiers, tier) => tiers[tier - 1],
+  namesByGroup,
+  mapGroup,
+  (groups, group) => groups[group - 1],
 )
-export const tierCount = createSelector(tierNames, _.iteratee("length"))
+export const groupCount = createSelector(groupNames, _.iteratee("length"))
 export const totalCount = createSelector(names, _.iteratee("length"))
-export const dump = {
-  names: namesByTier(),
-}
