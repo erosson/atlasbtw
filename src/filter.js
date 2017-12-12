@@ -9,7 +9,7 @@ const parseInput = createSelector(filterInput, input => {
   let words = []
   for (let token of tokens) {
     if (_.startsWith("tier:", token)) {
-      const tier = parseInt(token.slice("tier:".length)) || undefined
+      const tier = parseInt(token.slice("tier:".length), 10) || undefined
       ret = {...ret, tier}
     } else if (token === "unique") {
       ret = {...ret, unique: true}
@@ -27,7 +27,7 @@ const filterPred = createSelector(
   parseInput,
   Maps.vendorsFromByName,
   (crit, vendors) => map => {
-    if ("unique" in crit && crit.unique != map.unique) return false
+    if ("unique" in crit && !!crit.unique !== !!map.unique) return false
     if ("tier" in crit && crit.tier !== map.tier) return false
     if ("novendor" in crit && vendors[map.name].length) return false
     return crit.regexp.test(map.name)

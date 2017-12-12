@@ -23,6 +23,13 @@ export const dropOdds = createSelector(
   peersNumCompleted,
   (odds, num) => _.map(odd => ({...odd, peers: odd.peers + num}), odds),
 )
+export const hasDrops = createSelector(
+  Maps.hasDrops,
+  Maps.conditionalHasDrops,
+  local,
+  (drops, maybeDrops, state) =>
+    _.concat(drops, maybeDrops.filter(name => state[name])),
+)
 
 export function complete(name) {
   return {type: "COMPLETE", name}

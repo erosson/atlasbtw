@@ -7,8 +7,6 @@ import * as Maps from "./maps"
 import * as Tracker from "./tracker"
 import * as Filter from "./filter"
 import * as Navbar from "react-bootstrap/lib/Navbar"
-import * as Nav from "react-bootstrap/lib/Nav"
-import * as NavItem from "react-bootstrap/lib/NavItem"
 import * as FormGroup from "react-bootstrap/lib/FormGroup"
 import * as FormControl from "react-bootstrap/lib/FormControl"
 import * as Button from "react-bootstrap/lib/Button"
@@ -16,16 +14,36 @@ import * as Panel from "react-bootstrap/lib/Panel"
 import * as Well from "react-bootstrap/lib/Well"
 import * as ListGroup from "react-bootstrap/lib/ListGroup"
 import * as ListGroupItem from "react-bootstrap/lib/ListGroupItem"
-import * as Checkbox from "react-bootstrap/lib/Checkbox"
 const map = _.map.convert({cap: false})
 
 function groupLabel(name) {
   if (name === "unique") return "Uniques"
-  return "Tier " + parseInt(name)
+  return "Tier " + parseInt(name, 10)
 }
 
+const lowerWords = _.keyBy(_.identity, ["of", "the"])
+function titleCase(name) {
+  //return _.startCase(name) // nope - this eats punctuation and accents
+  return name
+    .split(" ")
+    .map(
+      (word, index) =>
+        // Skip capitalization of minor words, unless they're the first word.
+        // Capitalize "the" in "the vinktar square", but not "forge of the phoenix"
+        word in lowerWords && index !== 0 ? word : _.upperFirst(word),
+    )
+    .join(" ")
+}
 function TrackerLinkRender(props) {
-  const {name, vendorsFrom, dropsFrom, isCompleted, toggleComplete} = props
+  const {
+    name,
+    vendorsFrom,
+    dropsFrom,
+    hasDrops,
+    isCompleted,
+    isUnique,
+    toggleComplete,
+  } = props
   return (
     <ListGroupItem
       header={[
@@ -42,31 +60,48 @@ function TrackerLinkRender(props) {
           for={"checkbox-" + name}
           style={{marginLeft: "0.3em"}}
         >
-          {_.startCase(name)}
+          {titleCase(name)}
         </label>,
       ]}
     >
-      {isCompleted ? null : (
+      {isCompleted ? null /*<div>
+          {hasDrops.length
+            ? "Contains: " + hasDrops.map(titleCase).join(", ")
+            : // for top tiers, uniques
+              null}
+        </div>*/ : (
         <div>
           <div>
             {vendorsFrom.length ? (
-              "vendors from: " + vendorsFrom.join(", ")
+              "Vendor 3: " + vendorsFrom.map(titleCase).join(", ")
             ) : (
               <i>NO VENDOR</i>
             )}
           </div>
           <div>
             {dropsFrom.length
-              ? "drops from: " +
+              ? "Found in: " +
                 dropsFrom
                   .map(
-                    ({name, peers}) =>
-                      name + " (" + Math.floor(100 / peers) + "%)",
+                    ({name, peers, unique}) =>
+                      // uniques don't interfere with others' odds.
+                      !!unique || !!isUnique
+                        ? titleCase(name)
+                        : titleCase(name) +
+                          " (" +
+                          Math.floor(100 / peers) +
+                          "%)",
                   )
                   .join(", ")
               : // for T1s.
                 null}
           </div>
+          {/*<div>
+            {hasDrops.length
+              ? "Contains: " + hasDrops.map(titleCase).join(", ")
+              : // for top tiers, uniques
+                null}
+          </div>*/}
         </div>
       )}
     </ListGroupItem>
@@ -75,8 +110,10 @@ function TrackerLinkRender(props) {
 const TrackerLink = connect(
   createStructuredSelector({
     isCompleted: Tracker.isCompleted,
+    isUnique: Maps.isUnique,
     vendorsFrom: Maps.vendorsFrom,
     dropsFrom: Tracker.dropOdds,
+    //hasDrops: Tracker.hasDrops,
   }),
   {
     toggleComplete: Tracker.toggle,

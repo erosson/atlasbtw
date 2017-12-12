@@ -42,12 +42,20 @@ const dropsFromAll = createSelector(linksByName, nameProp, (ls, n) => ls[n])
 const map = createSelector(rawMaps, nameProp, (ms, n) => ms[n])
 const mapProp = _.memoize(f => createSelector(map, _.get(f)))
 export const mapTier = mapProp("tier")
+export const isUnique = mapProp("unique")
 // maps this can drop from with zero completion, excluding higher-tier maps.
 export const dropsFrom = createSelector(
   dropsFromAll,
   rawMaps,
   mapTier,
   (names, maps, maxTier) => _.filter(name => maps[name].tier <= maxTier, names),
+)
+// maps this drops/contains with zero completion
+export const hasDrops = createSelector(
+  dropsFromAll,
+  rawMaps,
+  mapTier,
+  (names, maps, maxTier) => _.filter(name => maps[name].tier >= maxTier, names),
 )
 // With no completion, what are the odds that other maps will drop this map?
 export const dropOdds = createSelector(
@@ -59,8 +67,16 @@ export const dropOdds = createSelector(
     _.map(
       name => ({
         name,
-        peers: _.filter(linkName => maps[linkName].tier === tier, links[name])
-          .length,
+        unique: maps[name].unique,
+        peers: _.filter(
+          linkName =>
+            maps[linkName].tier === tier &&
+            // uniques are special - they do "drop from" their linked maps, but
+            // the odds are low enough that they don't interfere with peer map
+            // drops. Leave them out of odds calculations.
+            !maps[linkName].unique,
+          links[name],
+        ).length,
       }),
       names,
     ),
@@ -86,7 +102,7 @@ export const groups = createSelector(
 )
 export const groupName = (s, p) => p.group
 export const tierName = (s, p) => p.tier || p.tier0 + 1
-const tierIndex = createSelector(tierName, t => t - 1)
+//const tierIndex = createSelector(tierName, t => t - 1)
 export const groupNames = createSelector(
   namesByGroup,
   groupName,
@@ -99,3 +115,22 @@ export const peerNames = createSelector(
 )
 export const groupCount = createSelector(groupNames, _.iteratee("length"))
 export const totalCount = createSelector(names, _.iteratee("length"))
+
+// possible +1 drops, if they're completed
+export const conditionalHasDrops = createSelector(
+  map,
+  hasDrops,
+  rawMaps,
+  namesByGroup,
+  (map, drops, maps, groups) => {
+    const myGroup = _mapGroup(map)
+    const nextGroups = _.uniq(
+      drops
+        .map(name => _mapGroup(maps[name]))
+        .filter(group => group !== myGroup && group !== "unique"),
+    )
+    if (nextGroups.length > 1) throw new Error("invalid nextgroup", nextGroups)
+    const nextGroup = nextGroups[0]
+    return _.difference(groups[nextGroup], drops)
+  },
+)
