@@ -115,6 +115,26 @@ export const peerNames = createSelector(
 )
 export const groupCount = createSelector(groupNames, _.iteratee("length"))
 export const totalCount = createSelector(names, _.iteratee("length"))
+export const unvendorables = createSelector(
+  vendorsFromByName,
+  rawMaps,
+  (vendors, maps) =>
+    _(maps)
+      .filter(
+        map =>
+          !vendors[map.name].length &&
+          // tier 1s are technically unvendorable, but they drop everywhere
+          map.tier > 1 &&
+          // vaal temple, shaper, and uniques don't block other maps from
+          // dropping, so ignore them
+          map.tier < 16 &&
+          !map.unique,
+      )
+      .sortBy(["tier", "name"])
+      .map("name")
+      .value(),
+)
+export const numUnvendorables = createSelector(unvendorables, u => u.length)
 
 // possible +1 drops, if they're completed
 export const conditionalHasDrops = createSelector(

@@ -1,4 +1,3 @@
-// @flow
 import _ from "lodash/fp"
 import {createSelector} from "reselect"
 import * as Maps from "./maps"
@@ -7,17 +6,44 @@ function local(root) {
   return root.tracker
 }
 const name = (state, props) => props.name
-export const isCompleted = createSelector(
-  name,
-  local,
-  (name, state) => state[name] || false,
+// The distinction between completed and unlocked (complete without bonus)
+// isn't important here.
+//const statuses = _.keyBy(_.identity, ["completed", "owned", "empty"])
+const _status = status => (status === true ? "completed" : status || "empty")
+export const status = createSelector(name, local, (name, local) =>
+  _status(local[name]),
 )
-function _total(state, names) {
-  return _.filter(name => state[name], names).length
+const _isCompleted = status => _status(status) === "completed"
+export const isCompleted = createSelector(status, _isCompleted)
+const _isOwned = status =>
+  _status(status) === "owned" || _status(status) === "completed"
+export const isOwned = createSelector(status, _isOwned)
+function _totalCompleted(state, names) {
+  return _.filter(name => _isCompleted(state[name]), names).length
 }
-export const groupNumCompleted = createSelector(local, Maps.groupNames, _total)
-export const totalNumCompleted = createSelector(local, Maps.names, _total)
-const peersNumCompleted = createSelector(local, Maps.peerNames, _total)
+function _totalOwned(state, names) {
+  return _.filter(name => _isOwned(state[name]), names).length
+}
+export const groupNumCompleted = createSelector(
+  local,
+  Maps.groupNames,
+  _totalCompleted,
+)
+export const groupNumOwned = createSelector(local, Maps.groupNames, _totalOwned)
+export const groupStatus = createSelector(
+  local,
+  Maps.groupNames,
+  (state, names) => {
+    const statuses = _.uniq(_.map(name => _status(state[name]), names))
+    return statuses.length === 1 ? statuses[0] : null
+  },
+)
+export const totalNumCompleted = createSelector(
+  local,
+  Maps.names,
+  _totalCompleted,
+)
+const peersNumCompleted = createSelector(local, Maps.peerNames, _totalCompleted)
 export const dropOdds = createSelector(
   Maps.dropOdds,
   peersNumCompleted,
@@ -30,15 +56,18 @@ export const hasDrops = createSelector(
   (drops, maybeDrops, state) =>
     _.concat(drops, maybeDrops.filter(name => state[name])),
 )
+const _isEmpty = _.negate(_isOwned)
+export const emptyUnvendorables = createSelector(
+  Maps.unvendorables,
+  local,
+  (names, state) => names.filter(name => _isEmpty(state[name])),
+)
 
-export function complete(name) {
-  return {type: "COMPLETE", name}
+export function setStatus(name, status) {
+  return {type: "SET_MAP_STATUS", name, status}
 }
-export function uncomplete(name) {
-  return {type: "UNCOMPLETE", name}
-}
-export function toggle(name) {
-  return {type: "TOGGLE", name}
+export function setGroupStatus(group, status) {
+  return {type: "SET_GROUP_STATUS", group, status}
 }
 export function clear() {
   return {type: "CLEAR"}
@@ -47,15 +76,20 @@ export function clear() {
 export function reducer(state = {}, action) {
   console.log("tracker.reducer", action)
   switch (action.type) {
-    case "COMPLETE":
-      return {...state, [action.name]: true}
-    case "UNCOMPLETE":
-      return _.omit([action.name], state)
-    case "TOGGLE":
-      return reducer(
-        state,
-        !!state[action.name] ? uncomplete(action.name) : complete(action.name),
-      )
+    case "SET_MAP_STATUS":
+      if (action.status === "empty") {
+        return _.omit([action.name], state)
+      }
+      return {...state, [action.name]: action.status}
+    case "SET_GROUP_STATUS":
+      const names = Maps.groupNames(null, {group: action.group})
+      if (action.status === "empty") {
+        return _.omit(names, state)
+      }
+      return {
+        ...state,
+        ..._.fromPairs(_.map(name => [name, action.status], names)),
+      }
     case "CLEAR":
       return {}
     default:
