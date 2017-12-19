@@ -120,7 +120,7 @@
   "necropolis": {"tier": 12, "vendor": "arsenal"},
   "overgrown shrine": {"tier": 12, "vendor": "desert spring"},
   "racecourse": {"tier": 12, "vendor": "terrace"},
-  "summit": {"tier": 12, "vendor": "summit"},
+  "summit": {"tier": 12, "vendor": "core"},
   "torture chamber": {"tier": 12, "vendor": "malformation"},
   "villa": {"tier": 12, "vendor": "park"},
 
