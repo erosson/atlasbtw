@@ -7,6 +7,7 @@ import * as Maps from "./maps"
 import * as Tracker from "./tracker"
 import * as Guide from "./guide"
 import * as Filter from "./filter"
+import * as Vendor from "./vendor-tree"
 import * as Navbar from "react-bootstrap/lib/Navbar"
 import * as FormGroup from "react-bootstrap/lib/FormGroup"
 import * as FormControl from "react-bootstrap/lib/FormControl"
@@ -46,11 +47,64 @@ function Anchor({id}) {
     />
   )
 }
+function VendorTreeRender(props) {
+  const {tree, depth, maxdepth, top, top2} = props
+  const [name, ...tail] = tree
+  if (top && !tail.length) {
+    return (
+      <div>
+        <i>UNVENDORABLE</i>
+      </div>
+    )
+  }
+  if (depth >= maxdepth) return "..."
+  return (
+    <div>
+      <div style={{float: "left", verticalAlign: "middle"}}>
+        {top ? (
+          <span>3-to-1 vendor:&nbsp;</span>
+        ) : (
+          <span>
+            {top2 ? null : <span>&nbsp;&lt;&nbsp;</span>}
+            <a href={"#" + name}>{titleCase(name)}</a>
+          </span>
+        )}
+      </div>
+      <div style={{float: "left", verticalAlign: "middle"}}>
+        {tail.map(tree2 => (
+          <VendorTreeRender
+            maxdepth={maxdepth}
+            depth={depth + 1}
+            tree={tree2}
+            top2={top}
+          />
+        ))}
+      </div>
+      <div style={{clear: "left"}} />
+    </div>
+  )
+  //return (
+  //  <div>
+  //    {vendorsFrom.length ? (
+  //      "3-to-1 vendor: " + vendorsFrom.map(titleCase).join(", ")
+  //    ) : (
+  //      <i>UNVENDORABLE</i>
+  //    )}
+  //  </div>
+  //)
+}
+const VendorTree = connect(
+  createStructuredSelector({
+    tree: Vendor.tree,
+    top: () => true,
+    maxdepth: () => 6,
+    depth: () => 0,
+  }),
+)(VendorTreeRender)
 function TrackerLinkRender(props) {
   const {
     name,
     tier,
-    vendorsFrom,
     dropsFrom,
     status,
     isUnique,
@@ -102,13 +156,7 @@ function TrackerLinkRender(props) {
       {status === "empty" ? (
         <div>
           {tier > 1 && tier < 16 && !isUnique ? (
-            <div>
-              {vendorsFrom.length ? (
-                "3-to-1 vendor: " + vendorsFrom.map(titleCase).join(", ")
-              ) : (
-                <i>UNVENDORABLE</i>
-              )}
-            </div>
+            <VendorTree name={name} />
           ) : null}
           <div>
             {dropsFrom.length ? (
@@ -165,7 +213,6 @@ const TrackerLink = connect(
     status: Tracker.status,
     tier: Maps.mapTier,
     isUnique: Maps.isUnique,
-    vendorsFrom: Maps.vendorsFrom,
     dropsFrom: Tracker.dropOdds,
     isSafeToComplete: Guide.isSafeToComplete,
     //hasDrops: Tracker.hasDrops,
