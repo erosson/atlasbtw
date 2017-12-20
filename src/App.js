@@ -370,7 +370,7 @@ function MinimizedCompletedRender(props) {
         //  {groupLabel(name)}
         //</Button>,
         <a
-          href={"#_show_" + name}
+          href={"#" + name}
           onClick={e => {
             e.preventDefault()
             showGroup(name)
