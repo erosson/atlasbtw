@@ -1,14 +1,17 @@
 import * as React from "react"
 import _ from "lodash/fp"
-import {createStore, combineReducers} from "redux"
+import {createStore} from "redux"
 import {createStructuredSelector} from "reselect"
 import {connect, Provider} from "react-redux"
-import * as Maps from "./maps"
-import * as Tracker from "./tracker"
-import * as Guide from "./guide"
-import * as Filter from "./filter"
-import * as Vendor from "./vendor-tree"
-import * as HideCompleted from "./hide-completed"
+import {
+  Maps,
+  Tracker,
+  Guide,
+  Filter,
+  Vendor,
+  HideCompleted,
+  reducer,
+} from "../selectors"
 import * as Navbar from "react-bootstrap/lib/Navbar"
 import * as FormGroup from "react-bootstrap/lib/FormGroup"
 import * as FormControl from "react-bootstrap/lib/FormControl"
@@ -402,6 +405,7 @@ function AppRender(props) {
     unvendorables,
     numUnvendorables,
   } = props
+  console.log(props)
   return (
     <div className="App container">
       <Navbar inverse fixedTop>
@@ -506,13 +510,9 @@ const App = connect(
   }),
 )(AppRender)
 
-const reducer = combineReducers({
-  tracker: Tracker.reducer,
-  filter: Filter.reducer,
-  showCompleted: HideCompleted.reducer,
-})
 const PERSIST_KEY = "poeatlas"
 function load() {
+  if (!window.localStorage) return {} // unit tests, incognito
   try {
     return JSON.parse(window.localStorage.getItem(PERSIST_KEY))
   } catch (e) {
