@@ -8,6 +8,7 @@ import * as Tracker from "./tracker"
 import * as Guide from "./guide"
 import * as Filter from "./filter"
 import * as Vendor from "./vendor-tree"
+import * as HideCompleted from "./hide-completed"
 import * as Navbar from "react-bootstrap/lib/Navbar"
 import * as FormGroup from "react-bootstrap/lib/FormGroup"
 import * as FormControl from "react-bootstrap/lib/FormControl"
@@ -111,7 +112,6 @@ function TrackerLinkRender(props) {
     isSafeToComplete,
     onChange,
   } = props
-  //console.log(name, status)
   return (
     <ListGroupItem
       header={[
@@ -262,6 +262,12 @@ function GroupRender(props) {
           onChange={onChange}
         >
           <ToggleButton
+            value="hidden"
+            title="You've beaten this map's boss and added it to your atlas (with or without the bonus). It can drop from any map."
+          >
+            Completed + Hidden
+          </ToggleButton>
+          <ToggleButton
             value="completed"
             title="You've beaten this map's boss and added it to your atlas (with or without the bonus). It can drop from any map."
           >
@@ -311,7 +317,7 @@ function GuideRender(props) {
   const {next, nextDropsFrom, nextTier} = props
   const prevTier = nextTier - 1
   const prevTier2 = prevTier - 1
-  console.log(props)
+  if (!next) return null
   return (
     <div>
       <div>
@@ -351,6 +357,40 @@ const GuideView = connect(
     nextTier: Guide.nextUnvendorableTier,
   }),
 )(GuideRender)
+
+function MinimizedCompletedRender(props) {
+  const {names, showGroup} = props
+  if (!names.length) return null
+  return (
+    <div>
+      Completed:{" "}
+      {names.map((name, i) => [
+        i !== 0 ? ", " : null,
+        //<Button bsStyle="link" onClick={() => showGroup(name)}>
+        //  {groupLabel(name)}
+        //</Button>,
+        <a
+          href={"#_show_" + name}
+          onClick={e => {
+            e.preventDefault()
+            showGroup(name)
+            return false
+          }}
+        >
+          {groupLabel(name)}
+        </a>,
+      ])}
+    </div>
+  )
+}
+const MinimizedCompleted = connect(
+  createStructuredSelector({
+    names: HideCompleted.hiddenGroups,
+  }),
+  {
+    showGroup: HideCompleted.showGroup,
+  },
+)(MinimizedCompletedRender)
 function AppRender(props) {
   const {
     groups,
@@ -388,7 +428,8 @@ function AppRender(props) {
         </Button>
         <div>
           <Anchor id="top" />
-          Maps completed: {numCompleted}/{numTotal}
+          Maps completed: {numCompleted}/{numTotal}{" "}
+          {numCompleted === numTotal ? ":)" : null}
         </div>
         <div>
           <div>
@@ -396,15 +437,17 @@ function AppRender(props) {
             {numUnvendorables - unvendorables.length} / {numUnvendorables}
             {unvendorables.length === 0 ? " :)" : null}
           </div>
-          <div>
-            Remaining unvendorables:{" "}
-            {unvendorables.map((name, i) => (
-              <span style={{fontWeight: i === 0 ? "bold" : ""}}>
-                {i !== 0 ? ", " : ""}
-                <a href={"#" + name}>{titleCase(name)}</a>
-              </span>
-            ))}
-          </div>
+          {unvendorables.length ? (
+            <div>
+              Remaining unvendorables:{" "}
+              {unvendorables.map((name, i) => (
+                <span style={{fontWeight: i === 0 ? "bold" : ""}}>
+                  {i !== 0 ? ", " : ""}
+                  <a href={"#" + name}>{titleCase(name)}</a>
+                </span>
+              ))}
+            </div>
+          ) : null}
           <div>&nbsp;</div>
           <GuideView />
           <div>&nbsp;</div>
@@ -434,6 +477,7 @@ function AppRender(props) {
             aiming for a 100%-complete atlas - if you'd rather farm shaped maps,
             adjust your approach accordingly when you reach tier 10+.
           </div>
+          <MinimizedCompleted />
         </div>
       </Well>
       {map(group => <Group key={group} group={group} />, groups)}
@@ -444,7 +488,7 @@ function AppRender(props) {
 const App = connect(
   createStructuredSelector({
     input: Filter.filterInput,
-    groups: Maps.groups,
+    groups: HideCompleted.shownGroups,
     numCompleted: Tracker.totalNumCompleted,
     numTotal: Maps.totalCount,
     unvendorables: Tracker.emptyUnvendorables,
@@ -465,6 +509,7 @@ const App = connect(
 const reducer = combineReducers({
   tracker: Tracker.reducer,
   filter: Filter.reducer,
+  showCompleted: HideCompleted.reducer,
 })
 const PERSIST_KEY = "poeatlas"
 function load() {
@@ -477,7 +522,7 @@ function load() {
 }
 const store = createStore(reducer, load() || undefined)
 function save() {
-  const state = _.pick(["tracker"], store.getState())
+  const state = _.pick(["tracker", "showCompleted"], store.getState())
   window.localStorage.setItem(PERSIST_KEY, JSON.stringify(state))
 }
 store.subscribe(save)

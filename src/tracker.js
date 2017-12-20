@@ -86,9 +86,10 @@ export function reducer(state = {}, action) {
       if (action.status === "empty") {
         return _.omit(names, state)
       }
+      const status = action.status === "hidden" ? "completed" : action.status
       return {
         ...state,
-        ..._.fromPairs(_.map(name => [name, action.status], names)),
+        ..._.fromPairs(_.map(name => [name, status], names)),
       }
     case "CLEAR":
       return {}

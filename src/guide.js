@@ -5,7 +5,7 @@ import * as Tracker from "./tracker"
 
 export const nextUnvendorable = createSelector(
   Tracker.emptyUnvendorables,
-  names => names[0] || null,
+  names => (names.length ? names[0] : null),
 )
 function withNextUnvendorable(selector) {
   return (state, props) => {
@@ -15,7 +15,7 @@ function withNextUnvendorable(selector) {
 }
 export const nextUnvendorableDropsFrom = _.flow(
   withNextUnvendorable(Maps.dropsFrom),
-  list => list[0],
+  list => (list && list.length ? list[0] : null),
 )
 export const nextUnvendorableTier = withNextUnvendorable(Maps.mapTier)
 export function isSafeToComplete(state, props) {
